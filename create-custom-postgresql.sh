@@ -19,13 +19,18 @@ EOSQL
 
 function create_db() {
 	psql -v ON_ERROR_STOP=1 -q --username "$POSTGRES_USER" <<-EOSQL
-CREATE EXTENSION IF NOT EXISTS dblink;
-
 DO \$$
 BEGIN
-	PERFORM dblink_exec('hostaddr=127.0.0.1 port=5432 user=$POSTGRES_USER password=$POSTGRES_PASSWORD dbname=' || current_database() , 'CREATE DATABASE $1');
-	EXCEPTION WHEN duplicate_database THEN
-		RAISE NOTICE '%, skipping', SQLERRM USING ERRCODE = SQLSTATE;
+    IF NOT EXISTS(
+        SELECT datname
+          FROM pg_catalog.pg_database
+          WHERE datname = '$1'
+      )
+    THEN
+      EXECUTE "CREATE DATABASE '$1'";
+    ELSE
+      RAISE NOTICE 'DB $1 exists. Skipping ....';
+    END IF;
 END
 \$$;
 EOSQL
@@ -127,18 +132,17 @@ function create_schema_for_db_user() {
 	create_db "$database" "$owner"
 	create_schema "$database" "$schema" "$owner"
 }
-
 if [ ! -z ${POSTGRES_MULTIPLE_DATABASES+x} ] && [ -n "$POSTGRES_MULTIPLE_DATABASES" ]; then
-	printf "\n\e[1m\e[3m*** Multiple database creation requested: '%s'\e[0m\e[0m\n" "$POSTGRES_MULTIPLE_DATABASES"
-	for db in $(echo "$POSTGRES_MULTIPLE_DATABASES" | tr ':' ' '); do
-	create_user_and_database "$db"
-	done
-	printf "\n\n\t-- \t Multiple databases created \t --\n\n"
+  printf "\n\e[1m\e[3m*** Multiple database creation requested: '%s'\e[0m\e[0m\n" "$POSTGRES_MULTIPLE_DATABASES"
+  for db in $(echo "$POSTGRES_MULTIPLE_DATABASES" | tr ':' ' '); do
+  create_user_and_database "$db"
+  done
+  printf "\n\n\t-- \t Multiple databases created \t --\n\n"
 fi
 if [ ! -z ${POSTGRES_SCHEMAS+x} ] && [ -n "$POSTGRES_SCHEMAS" ]; then
   printf "\n\e[1m\e[3m*** Schema creation requested: '%s'\e[0m\e[0m\n" "$POSTGRES_SCHEMAS"
-	for schema_input in $(echo "$POSTGRES_SCHEMAS" | tr ':' ' '); do
-	create_schema_for_db_user "$schema_input"
-	done
-	printf "\n\n\t-- \t Schemas created \t --\n\n"
+  for schema_input in $(echo "$POSTGRES_SCHEMAS" | tr ':' ' '); do
+  create_schema_for_db_user "$schema_input"
+  done
+  printf "\n\n\t-- \t Schemas created \t --\n\n"
 fi
