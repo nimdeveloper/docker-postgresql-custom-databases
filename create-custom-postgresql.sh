@@ -81,7 +81,7 @@ function create_user_and_database() {
 	  password="$POSTGRES_PASSWORD"
   fi
   if [[ $owner == '' ]]; then
-	  owner="POSTGRES_USER"
+	  owner="$POSTGRES_USER"
   fi
 	printf "\n\tCreating database '%s' for user '%s'\n" "$database" "$owner"
 
@@ -112,7 +112,7 @@ function create_schema_for_db_user() {
 	  password="$POSTGRES_PASSWORD"
   fi
   if [[ $owner == '' ]]; then
-	  owner="POSTGRES_USER"
+	  owner="$POSTGRES_USER"
   fi
 	printf "\n\tCreating schema '%s' for database '%s' with user '%s'\n" "$schema" "$database" "$owner"
 
