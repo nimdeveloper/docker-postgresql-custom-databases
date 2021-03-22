@@ -12,13 +12,13 @@ function user_exists() {
 }
 
 function alter_role(){
-	psql -v ON_ERROR_STOP=1 -q --username "$POSTGRES_USER" <<-EOSQL
+	psql -v ON_ERROR_STOP=1 -q --username "$POSTGRES_USER" -d "$POSTGRES_DB" <<-EOSQL
 GRANT ALL PRIVILEGES ON DATABASE $1 TO $2;
 EOSQL
 }
 
 function create_db() {
-	psql -v ON_ERROR_STOP=1 -q --username "$POSTGRES_USER" <<-EOSQL
+	psql -v ON_ERROR_STOP=1 -q --username "$POSTGRES_USER" -d "$POSTGRES_DB" <<-EOSQL
 DO \$$
 BEGIN
     IF NOT EXISTS(
@@ -38,7 +38,7 @@ EOSQL
 }
 
 function create_schema() {
-	psql -v ON_ERROR_STOP=1 -q --username "$POSTGRES_USER" <<-EOSQL
+	psql -v ON_ERROR_STOP=1 -q --username "$POSTGRES_USER" -d "$POSTGRES_DB" <<-EOSQL
 \connect $1;
 
 DO \$$
@@ -60,7 +60,7 @@ EOSQL
 }
 
 function create_user() {
-	psql -v ON_ERROR_STOP=1 -q --username "$POSTGRES_USER" <<-EOSQL
+	psql -v ON_ERROR_STOP=1 -q --username "$POSTGRES_USER" -d "$POSTGRES_DB" <<-EOSQL
 DO
 \$$
 BEGIN
