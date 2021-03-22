@@ -5,7 +5,7 @@ set -u
 
 function user_exists() {
 	if [[ -n $1 ]]; then
-		[[ -n $(psql -qtA --username "$POSTGRES_USER" -c "\du ${1}" | cut -d "|" -f 1) ]] && echo 1 || echo 0
+		[[ -n $(psql -qtA --username "$POSTGRES_USER" -d "$POSTGRES_DB" -c "\du ${1}" | cut -d "|" -f 1) ]] && echo 1 || echo 0
 	else
 	  echo 0
 	fi
